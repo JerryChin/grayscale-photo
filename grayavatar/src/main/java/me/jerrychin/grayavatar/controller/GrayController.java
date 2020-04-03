@@ -83,8 +83,10 @@ public class GrayController {
             Path path = Paths.get(file.getAbsolutePath());
             ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
             return ResponseEntity.ok()
+                    .header("Content-Disposition", "attachment; filename=" + file.getName())
                     .contentLength(file.length())
-                    .contentType(MediaType.parseMediaType(URLConnection.guessContentTypeFromName(file.getName())))
+                    // URLConnection.guessContentTypeFromName(file.getName())
+                    .contentType(MediaType.parseMediaType("application/octet-stream"))
                     .body(resource);
         } finally {
             file.delete();
