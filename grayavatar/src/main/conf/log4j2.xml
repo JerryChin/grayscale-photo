@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="warn" monitorInterval="300">
+    <properties>
+        <property name="LOG_HOME">/logs/user-console/</property>
+    </properties>
+    <Appenders>
+
+        <!-- 控制台-->
+        <Console name="console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%level{length=1} %date{yyyy-MM-dd HH:mm:ss.SSS} [%logger{2}] %msg%n" />
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+        </Console>
+
+        <!-- 严重错误 -->
+        <RollingRandomAccessFile name="fatal"
+                                 fileName="${LOG_HOME}/fatal.log" filePattern="${LOG_HOME}/fatal.log-%d{yyyy-MM-dd}">
+            <PatternLayout
+                    pattern="%level{length=1} %date{yyyy-MM-dd HH:mm:ss.SSS} [%logger{2}] %msg%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+            </Policies>
+            <ThresholdFilter level="FATAL" onMatch="ACCEPT" onMismatch="DENY"/>
+            <DefaultRolloverStrategy>
+                <Delete basePath="${LOG_HOME}" maxDepth="1">
+                    <IfFileName glob="fatal.log-*" />
+                    <IfLastModified age="15d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+
+        <!-- 一般日志 -->
+        <RollingRandomAccessFile name="info"
+                                 fileName="${LOG_HOME}/info.log" filePattern="${LOG_HOME}/info.log-%d{yyyy-MM-dd}">
+            <PatternLayout
+                    pattern="%level{length=1} %date{yyyy-MM-dd HH:mm:ss.SSS} [%logger{2}] %msg%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+            </Policies>
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <DefaultRolloverStrategy>
+                <Delete basePath="${LOG_HOME}" maxDepth="1">
+                    <IfFileName glob="info.log-*" />
+                    <IfLastModified age="15d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+
+        <!-- 一般日志 -->
+        <RollingRandomAccessFile name="system"
+                                 fileName="${LOG_HOME}/system.log" filePattern="${LOG_HOME}/system.log-%d{yyyy-MM-dd}">
+            <PatternLayout
+                    pattern="%level{length=1} %date{yyyy-MM-dd HH:mm:ss.SSS} [%logger{2}] %msg%n" />
+            <Policies>
+                <TimeBasedTriggeringPolicy />
+            </Policies>
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
+            <DefaultRolloverStrategy>
+                <Delete basePath="${LOG_HOME}">
+                    <IfFileName glob="system.log-*" />
+                    <IfLastModified age="15d" />
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingRandomAccessFile>
+
+    </Appenders>
+
+    <Loggers>
+        <!-- 未声明通通输出至common下面 -->
+        <Root level="info">
+            <AppenderRef ref="console"/>
+            <AppenderRef ref="fatal"/>
+            <AppenderRef ref="info"/>
+        </Root>
+    </Loggers>
+</Configuration>
