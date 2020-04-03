@@ -3,13 +3,14 @@
 <head>
 
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
     <!-- 引入样式 -->
     <link rel="stylesheet" href="https://unpkg.com/element-ui@1.4/lib/theme-default/index.css">
 </head>
 <body>
 <div id="app">
-    <el-menu theme="dark" :default-active="activeIndex" class="el-menu-demo" mode="horizontal" @select="handleSelect">
+    <el-menu theme="dark"  class="el-menu-demo" mode="horizontal">
         <el-menu-item index="1">头像变灰小工具</el-menu-item>
     </el-menu>
     <el-row>
@@ -22,15 +23,19 @@
                     action="/convert"
                     :show-file-list="false"
                     :on-success="handleAvatarSuccess"
+                    :on-error="handleAvatarError"
                     :before-upload="beforeAvatarUpload">
 
                 <!--<img  :src="imageUrl" class="avatar">-->
 
-                <el-button size="large" v-if="imageUrl" type="primary" @click="download" class="download">立即下载</el-button>
+                <el-button size="large" v-if="imageUrl" type="primary" @click="download" class="download">立即下载
+                </el-button>
 
-                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                <i v-else-if="!loading" class="el-icon-plus avatar-uploader-icon"></i>
 
-                <div slot="tip" class="el-upload__tip">只能上传JPG/PNG文件，且不超过 500KB</div>
+                <i v-else class="el-icon-loading avatar-uploader-icon"></i>
+
+                <div slot="tip" class="el-upload__tip">只能上传JPG/PNG文件，且不超过 1MB</div>
             </el-upload>
 
 
@@ -49,11 +54,11 @@
 
                 看到了<a href="https://weibo.com/sinat?refer_flag=1001030103_">微博小秘书关于全国性悼念活动倡议</a>，我非常支持这个倡议。
 
-                考虑修改灰色头像会有一定技术门槛，于是思考能否开发一个小工具方便大家使用。 夜间紧急开发并上线了这个小工具。
+                考虑修改灰色头像会有一定技术门槛，于是思考能否开发一个小工具方便大家使用。 考虑到第二天就是哀悼日，准备夜间快速开发上线。
 
 
             </p>
-            <img src="https://i.postimg.cc/zB3rQc1Q/760042325.png" width="100%" />
+            <img src="https://s1.ax1x.com/2020/04/04/GdDeAA.png" alt="微信小秘书倡议" width="99%"/>
             <el-tag type="gray">4月4日晚上 2点</el-tag>
             <p>
                 有初步想法之后，开始进行开发工作，直至 2点基本完成基本功能开发。
@@ -88,8 +93,11 @@
                 <br>
                 如果你手头不宽裕也不要紧，把它分享给更多人就行啦！
             </p>
-            <img src="https://i.postimg.cc/zGdnpBS8/1449427164.png" width="100%" />
-
+            <img src="https://s1.ax1x.com/2020/04/04/GdDFXD.png" alt="收钱码 785883308@qq.com" width="99%"/>
+            <el-tag type="gray">开源技术</el-tag>
+            <p>
+                Powered by Element & Tomcat, Running on Aliyun cloud. StackOverflow 也提供了非常多帮助。
+            </p>
         </el-col>
     </el-row>
 
@@ -105,33 +113,50 @@
 <script>
     new Vue({
         el: '#app',
-        data: function() {
+        data: function () {
             return {
                 visible: false,
-                imageUrl: ""
+                imageUrl: "",
+                loading: false
             }
         },
         methods: {
             download() {
                 let imageUrl = this.imageUrl;
                 this.imageUrl = null;
-                window.open(imageUrl , "_blank");
+                window.open(imageUrl, "_blank");
+            },
+            handleAvatarError(err){
+
+                this.$message('转换失败！原因：' + JSON.stringify(err));
+
+                this.loading = false;
             },
             handleAvatarSuccess(res, file, fileList) {
-                console.log(res, file,  fileList)
+                console.log(res, file, fileList)
 
+                this.$message({
+                    message: '转换成功！',
+                    type: 'success'
+                });
+
+                this.loading = false;
                 this.imageUrl = "/download?fileId=" + res.fileId
             },
             beforeAvatarUpload(file) {
                 const isJPG = file.type === 'image/jpeg';
-                const isLt2M = file.size / 1024 < 500;
+                const isLt2M = file.size / 1024 / 1024 < 1;
 
 //                if (!isJPG) {
 //                    this.$message.error('上传头像图片只能是 JPG 格式!');
 //                }
                 if (!isLt2M) {
-                    this.$message.error('上传头像图片大小不能超过 500KB!');
+                    this.$message.error('上传头像图片大小不能超过 1 MB!');
                 }
+                if (isLt2M) {
+                    this.loading = true;
+                }
+
                 return isLt2M;
             }
         }
@@ -145,9 +170,11 @@
         position: relative;
         overflow: hidden;
     }
+
     .avatar-uploader .el-upload:hover {
         border-color: #20a0ff;
     }
+
     .avatar-uploader-icon {
         font-size: 28px;
         color: #8c939d;
@@ -156,6 +183,7 @@
         line-height: 178px;
         text-align: center;
     }
+
     .avatar {
         width: 178px;
         height: 178px;

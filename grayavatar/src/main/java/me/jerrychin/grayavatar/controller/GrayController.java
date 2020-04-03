@@ -1,5 +1,8 @@
 package me.jerrychin.grayavatar.controller;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import lombok.Data;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FilenameUtils;
@@ -11,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.imageio.ImageIO;
+import javax.servlet.http.HttpServletRequest;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
@@ -21,6 +25,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Jerry Chin
@@ -29,6 +36,7 @@ import java.util.UUID;
 @RestController
 public class GrayController {
     private File avatarDir;
+    private final LoadingCache<String, AtomicInteger> cache;
 
     GrayController() {
         File tempDir = new File(System.getProperty("java.io.tmpdir"));
@@ -39,12 +47,29 @@ public class GrayController {
             avatarDir.mkdirs();
         }
 
+
+        cache = CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.DAYS).build(new CacheLoader<String, AtomicInteger>() {
+            @Override
+            public AtomicInteger load(final String s) throws Exception {
+                return new AtomicInteger(0);
+            }
+        });
+
         log.info("avatar dir: {}", avatarDir.getAbsolutePath());
 
     }
 
     @GetMapping("/download")
-    public @ResponseBody ResponseEntity<Resource> handleDownload(@RequestParam String fileId) throws IOException {
+    public @ResponseBody ResponseEntity<Resource> handleDownload(HttpServletRequest request, @RequestParam String fileId) throws IOException, ExecutionException {
+
+        String ip = request.getRemoteAddr();
+        AtomicInteger counter = cache.get(ip);
+
+        if (counter.getAndIncrement() > 50) {
+            log.error("ip {} try too many time, rejected!", ip);
+            throw new RuntimeException("try too many!");
+        }
+
 
         if (fileId.contains("..")) {
             log.error("bad file id: {}", fileId);
@@ -73,6 +98,15 @@ public class GrayController {
 
     @PostMapping("/convert")
     public @ResponseBody Response handleGray(@RequestParam("file") MultipartFile file) throws IOException {
+
+
+        if (file.isEmpty()) {
+            throw new RuntimeException("请选择头像文件！");
+        }
+
+        if (file.getSize() != 0 && file.getSize() > 1 * 1024 * 1024) {
+            throw new RuntimeException("文件过大，放过我吧！");
+        }
 
         BufferedImage img = ImageIO.read(file.getInputStream());
 
