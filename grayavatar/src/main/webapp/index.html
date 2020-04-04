@@ -41,32 +41,7 @@
 
         </el-col>
     </el-row>
-    <el-dialog
-            title="提示"
-            :visible.sync="dialogVisible">
-        <h3>苹果用户必读</h3>
-
-        <p>
-            首先，请使用自带浏览器打开本网站，上传头像然后点击下载按钮，之后将弹出下载对话框，选择「下载」
-        </p>
-        <img src="https://s1.ax1x.com/2020/04/04/GdLKCq.jpg" width="99%"/>
-
-        <p>
-            然后点击浏览器右上角箭头，点击刚刚下载的图片
-        </p>
-        <img src="https://s1.ax1x.com/2020/04/04/GdLeEj.jpg" width="99%"/>
-        <p>
-            在新的页面点击左下角按钮，将弹出操作面板，选择存储图像
-        </p>
-        <img src="https://s1.ax1x.com/2020/04/04/GdLAKS.jpg" width="99%"/>
-
-        <span slot="footer" class="dialog-footer">
-    <el-button @click="dialogVisible = false">取 消</el-button>
-    <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
-  </span>
-    </el-dialog>
-
-    <el-button type="text" @click="dialogVisible = true">苹果用户必读</el-button>
+    <el-button type="text" @click="tip">苹果用户必读</el-button>
 
 
     <el-row>
@@ -140,7 +115,7 @@
 
 </body>
 <!-- 先引入 Vue -->
-<script src="https://unpkg.com/vue@2.5/dist/vue.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.0/dist/vue.min.js"></script>
 <!-- 引入组件库 -->
 <script src="https://unpkg.com/element-ui@1.4/lib/index.js"></script>
 <script>
@@ -155,6 +130,10 @@
             }
         },
         methods: {
+            tip() {
+                window.open("/tip.html", "_blank");
+
+            },
             download() {
                 let imageUrl = this.imageUrl;
                 this.imageUrl = null;
