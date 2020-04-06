@@ -99,8 +99,9 @@ public class GrayController {
     }
 
     @PostMapping("/convert")
-    public @ResponseBody Response handleGray(@RequestParam("file") MultipartFile file) throws IOException {
+    public @ResponseBody Response handleGray(@RequestParam("file") MultipartFile file, @RequestParam(defaultValue = "false") boolean debug) throws IOException {
 
+        log.info("debug: {}", debug);
 
         if (file.isEmpty()) {
             throw new RuntimeException("请选择头像文件！");
@@ -126,10 +127,19 @@ public class GrayController {
                 int g = (p >> 8) & 0xff;
                 int b = p & 0xff;
 
-                int avg = (r + g + b)/3;
+
+                int gray ;
+
+
+                if (debug) {
+                    gray =  (int)(r * 0.299 + g * 0.587 + b * 0.114);
+                } else {
+                    gray = (r + g + b)/3;
+                }
+
 
                 //replace RGB value with avg
-                p = (a << 24) | (avg << 16) | (avg << 8) | avg;
+                p = (a << 24) | (gray << 16) | (gray << 8) | gray;
 
                 img.setRGB(j, i, p);
             }
